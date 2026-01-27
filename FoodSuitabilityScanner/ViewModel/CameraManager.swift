@@ -8,9 +8,12 @@
 import AVFoundation //working with time-based audiovisual media, I'm using the camera and barcode function
 
 
-class CameraManager:NSObject {
+class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
     let session = AVCaptureSession()
+    var onBarcodeScan: ((String)->Void)? //used when a barcode is scanned
+    private let metadataOutput = AVCaptureMetadataOutput()
     
+    // makes permission
     func requestPermission(){
         AVCaptureDevice.requestAccess(for: .video) { granted in
             DispatchQueue.main.async {
@@ -34,6 +37,21 @@ class CameraManager:NSObject {
         {
             session.stopRunning()
         }
+    }
+    
+    func cameraSetUp() -> AVCaptureDeviceInput? {
+        guard let device = AVCaptureDevice.default(for: .video) else {
+            return nil
+        }
+        
+        do {
+            let input = try AVCaptureDeviceInput(device: device)
+            return input
+        } catch {
+            print("Error setting up camera input: \(error)")
+            return nil
+        }
+        
     }
     
 }
