@@ -11,7 +11,7 @@ import SwiftUI
 struct FoodSuitabilityScannerApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavBarView()
         }
     }
 }
