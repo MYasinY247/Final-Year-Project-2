@@ -11,6 +11,7 @@ import AVFoundation //working with time-based audiovisual media, I'm using the c
 class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
     let session = AVCaptureSession()
     var onBarcodeScan: ((String)->Void)? //used when a barcode is scanned
+    
     private let metadataOutput = AVCaptureMetadataOutput()
     
     // makes permission
@@ -26,9 +27,10 @@ class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
         }
     }
     func start(){
-        if !session.isRunning
-        {
-            session.startRunning()
+        DispatchQueue.global(qos: .userInitiated).async {
+                if !self.session.isRunning {
+                    self.session.startRunning()
+                }
         }
     }
     
@@ -52,6 +54,39 @@ class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
             return nil
         }
         
+    }
+    
+    func configureSession(){
+        session.beginConfiguration()
+        
+        if let videoInput = cameraSetUp() {
+            if session.canAddInput(videoInput) {
+                session.addInput(videoInput)
+            } else {
+                print("Could not add video input to session")
+            }
+        }
+        
+        if session.canAddOutput(metadataOutput) {
+            session.addOutput(metadataOutput)
+            
+            metadataOutput.setMetadataObjectsDelegate(self, queue: .main)
+            let supportedTypes = metadataOutput.availableMetadataObjectTypes
+            let desiredTypes = [AVMetadataObject.ObjectType.qr, AVMetadataObject.ObjectType.ean13, AVMetadataObject.ObjectType.ean8, AVMetadataObject.ObjectType.upce, AVMetadataObject.ObjectType.code128]
+            
+            metadataOutput.metadataObjectTypes = desiredTypes.filter{
+                supportedTypes.contains( $0 )
+            }
+            
+//            metadataOutput.metadataObjectTypes = [.qr,.ean13,.ean8,.upce .code128]
+        }
+        session.commitConfiguration()
+    }
+    
+    func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+        guard let metadataObject = metadataObjects.first as? AVMetadataMachineReadableCodeObject, let barcodeValue = metadataObject.stringValue else { return }
+        stop()
+        onBarcodeScan?(barcodeValue)
     }
     
 }

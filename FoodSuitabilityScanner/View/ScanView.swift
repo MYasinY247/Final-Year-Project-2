@@ -8,8 +8,21 @@
 import SwiftUI
 
 struct ScanView: View {
+    private let cameraManager = CameraManager()
     var body: some View {
         Text("Camera View")
+            .onAppear {
+                cameraManager.requestPermission()
+                cameraManager.configureSession()
+                
+                cameraManager.onBarcodeScan = { result in
+                    print("Scanned barcode ", result)
+                }
+                cameraManager.start()
+            }
+            .onDisappear{
+                cameraManager.stop()
+            }
     }
 }
 #Preview {
