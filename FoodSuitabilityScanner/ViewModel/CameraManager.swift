@@ -11,6 +11,7 @@ import AVFoundation //working with time-based audiovisual media, I'm using the c
 class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
     let session = AVCaptureSession()
     var onBarcodeScan: ((String)->Void)? //used when a barcode is scanned
+    private var isScan = false
     
     private let metadataOutput = AVCaptureMetadataOutput()
     
@@ -93,9 +94,16 @@ class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
     }
     
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+        
+        guard !isScan else { return }
+        
         guard let metadataObject = metadataObjects.first as? AVMetadataMachineReadableCodeObject, let barcodeValue = metadataObject.stringValue else { return }
+        
+        isScan = true
         stop()
+        
         onBarcodeScan?(barcodeValue)
+        isScan = false
     }
     
 }
