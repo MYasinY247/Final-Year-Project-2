@@ -10,7 +10,9 @@ import SwiftUI
 struct ScanView: View {
     private let cameraManager = CameraManager()
     var body: some View {
-        Text("Camera View")
+        CameraPreview(session: cameraManager.session)
+            .edgesIgnoringSafeArea(.all) // Ensure the preview layer fills the screen
+
             .onAppear {
                 cameraManager.requestPermission()
                 cameraManager.configureSession()
@@ -28,3 +30,4 @@ struct ScanView: View {
 #Preview {
     ScanView()
 }
+

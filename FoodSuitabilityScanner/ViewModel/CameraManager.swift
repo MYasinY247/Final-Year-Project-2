@@ -29,6 +29,7 @@ class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
     func start(){
         DispatchQueue.global(qos: .userInitiated).async {
                 if !self.session.isRunning {
+                    print("sratr")
                     self.session.startRunning()
                 }
         }
@@ -58,17 +59,27 @@ class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
     
     func configureSession(){
         session.beginConfiguration()
+        session.sessionPreset = .high
+
+        session.inputs.forEach{session.removeInput($0)}
+        session.outputs.forEach{session.removeOutput($0)}
+
         
         if let videoInput = cameraSetUp() {
             if session.canAddInput(videoInput) {
                 session.addInput(videoInput)
+                print("Video added")
             } else {
                 print("Could not add video input to session")
             }
+            
+        } else{
+            print("failed to input")
         }
         
         if session.canAddOutput(metadataOutput) {
             session.addOutput(metadataOutput)
+            print("metadata added")
             
             metadataOutput.setMetadataObjectsDelegate(self, queue: .main)
             let supportedTypes = metadataOutput.availableMetadataObjectTypes
@@ -77,9 +88,7 @@ class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
             metadataOutput.metadataObjectTypes = desiredTypes.filter{
                 supportedTypes.contains( $0 )
             }
-            
-//            metadataOutput.metadataObjectTypes = [.qr,.ean13,.ean8,.upce .code128]
-        }
+                    }
         session.commitConfiguration()
     }
     
