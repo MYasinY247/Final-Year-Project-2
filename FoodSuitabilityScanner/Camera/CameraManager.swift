@@ -10,13 +10,13 @@ import AVFoundation //working with time-based audiovisual media, I'm using the c
 
 class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
     let session = AVCaptureSession()
-    var onBarcodeScan: ((String)->Void)? //used when a barcode is scanned
+    var onBarcodeScan: ((String)->Void)? //closure
     private var isScan = false
     
     private let metadataOutput = AVCaptureMetadataOutput()
     
-    // makes permission
-    func requestPermission(){
+    
+    func requestPermission(){ //permission handling
         AVCaptureDevice.requestAccess(for: .video) { granted in
             DispatchQueue.main.async {
                 if granted {
@@ -27,23 +27,24 @@ class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
             }
         }
     }
-    func start(){
+    func start(){ //starting capture session
         DispatchQueue.global(qos: .userInitiated).async {
                 if !self.session.isRunning {
-                    print("sratr")
+                    print("camera is running")
                     self.session.startRunning()
                 }
         }
     }
     
-    func stop(){
+    func stop(){ //ending capture session
         if session.isRunning
         {
+            print("camera stopped running")
             session.stopRunning()
         }
     }
     
-    func cameraSetUp() -> AVCaptureDeviceInput? {
+    func cameraSetUp() -> AVCaptureDeviceInput? { //setting up camera
         guard let device = AVCaptureDevice.default(for: .video) else {
             return nil
         }
@@ -58,7 +59,7 @@ class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
         
     }
     
-    func configureSession(){
+    func configureSession(){ //makes camera session, adding video inpout and metadata output
         session.beginConfiguration()
         session.sessionPreset = .high
 
@@ -93,6 +94,7 @@ class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
         session.commitConfiguration()
     }
     
+    //stops scanning when barcode is detected
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         
         guard !isScan else { return }
@@ -104,6 +106,19 @@ class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
         
         onBarcodeScan?(barcodeValue)
         isScan = false
+        
+        BarcodeProcessor.getBarcode(barcode: barcodeValue) { (result) in
+            switch result {
+            case .success(let product):
+                print("Product found: \(product.product_name ?? "Unknown")")
+            case .failure(let error):
+                print("Error: \(error)")
+            }
+        }
+        
+        
     }
+
+    
     
 }
