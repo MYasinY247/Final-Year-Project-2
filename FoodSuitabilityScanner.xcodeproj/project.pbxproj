@@ -11,7 +11,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		84E9F2EA2F2F807600F9DADC /* Exceptions for "FoodSuitabilityScanner_W1974891" folder in "FoodSuitabilityScanner_W1974891" target */ = {
+		84E9F2EA2F2F807600F9DADC /* Exceptions for "FoodSuitabilityScanner" folder in "FoodSuitabilityScanner_W1974891" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -21,12 +21,12 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		845916442F27EB9600069500 /* FoodSuitabilityScanner_W1974891 */ = {
+		845916442F27EB9600069500 /* FoodSuitabilityScanner */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				84E9F2EA2F2F807600F9DADC /* Exceptions for "FoodSuitabilityScanner_W1974891" folder in "FoodSuitabilityScanner_W1974891" target */,
+				84E9F2EA2F2F807600F9DADC /* Exceptions for "FoodSuitabilityScanner" folder in "FoodSuitabilityScanner_W1974891" target */,
 			);
-			path = FoodSuitabilityScanner_W1974891;
+			path = FoodSuitabilityScanner;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -45,7 +45,7 @@
 		845916392F27EB9600069500 = {
 			isa = PBXGroup;
 			children = (
-				845916442F27EB9600069500 /* FoodSuitabilityScanner_W1974891 */,
+				845916442F27EB9600069500 /* FoodSuitabilityScanner */,
 				845916432F27EB9600069500 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -74,7 +74,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				845916442F27EB9600069500 /* FoodSuitabilityScanner_W1974891 */,
+				845916442F27EB9600069500 /* FoodSuitabilityScanner */,
 			);
 			name = FoodSuitabilityScanner_W1974891;
 			packageProductDependencies = (

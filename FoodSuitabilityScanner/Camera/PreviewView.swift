@@ -17,3 +17,6 @@ final class PreviewView: UIView {
         return layer as! AVCaptureVideoPreviewLayer
     }
 }
+
+//Build input file cannot be found: '/Users/yasin/Documents/Uni/Year 3/Semester 1/Final Year Project/Final Year Project/FoodSuitabilityScanner/FoodSuitabilityScanner/Info.plist'. Did you forget to declare this file as an output of a script phase or custom build rule which produces it?
+
