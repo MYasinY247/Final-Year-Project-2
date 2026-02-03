@@ -7,16 +7,16 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		845916422F27EB9600069500 /* FoodSuitabilityScanner_W1974891.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FoodSuitabilityScanner_W1974891.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		845916422F27EB9600069500 /* FoodSuitabilityScanner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FoodSuitabilityScanner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		84E9F2EA2F2F807600F9DADC /* Exceptions for "FoodSuitabilityScanner" folder in "FoodSuitabilityScanner_W1974891" target */ = {
+		84E9F2EA2F2F807600F9DADC /* Exceptions for "FoodSuitabilityScanner" folder in "FoodSuitabilityScanner" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 845916412F27EB9600069500 /* FoodSuitabilityScanner_W1974891 */;
+			target = 845916412F27EB9600069500 /* FoodSuitabilityScanner */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -24,7 +24,7 @@
 		845916442F27EB9600069500 /* FoodSuitabilityScanner */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				84E9F2EA2F2F807600F9DADC /* Exceptions for "FoodSuitabilityScanner" folder in "FoodSuitabilityScanner_W1974891" target */,
+				84E9F2EA2F2F807600F9DADC /* Exceptions for "FoodSuitabilityScanner" folder in "FoodSuitabilityScanner" target */,
 			);
 			path = FoodSuitabilityScanner;
 			sourceTree = "<group>";
@@ -53,7 +53,7 @@
 		845916432F27EB9600069500 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				845916422F27EB9600069500 /* FoodSuitabilityScanner_W1974891.app */,
+				845916422F27EB9600069500 /* FoodSuitabilityScanner.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,9 +61,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		845916412F27EB9600069500 /* FoodSuitabilityScanner_W1974891 */ = {
+		845916412F27EB9600069500 /* FoodSuitabilityScanner */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8459164D2F27EB9700069500 /* Build configuration list for PBXNativeTarget "FoodSuitabilityScanner_W1974891" */;
+			buildConfigurationList = 8459164D2F27EB9700069500 /* Build configuration list for PBXNativeTarget "FoodSuitabilityScanner" */;
 			buildPhases = (
 				8459163E2F27EB9600069500 /* Sources */,
 				8459163F2F27EB9600069500 /* Frameworks */,
@@ -76,11 +76,11 @@
 			fileSystemSynchronizedGroups = (
 				845916442F27EB9600069500 /* FoodSuitabilityScanner */,
 			);
-			name = FoodSuitabilityScanner_W1974891;
+			name = FoodSuitabilityScanner;
 			packageProductDependencies = (
 			);
 			productName = FoodSuitabilityScanner;
-			productReference = 845916422F27EB9600069500 /* FoodSuitabilityScanner_W1974891.app */;
+			productReference = 845916422F27EB9600069500 /* FoodSuitabilityScanner.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -98,7 +98,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 8459163D2F27EB9600069500 /* Build configuration list for PBXProject "FoodSuitabilityScanner_W1974891" */;
+			buildConfigurationList = 8459163D2F27EB9600069500 /* Build configuration list for PBXProject "FoodSuitabilityScanner" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -112,7 +112,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				845916412F27EB9600069500 /* FoodSuitabilityScanner_W1974891 */,
+				845916412F27EB9600069500 /* FoodSuitabilityScanner */,
 			);
 		};
 /* End PBXProject section */
@@ -330,7 +330,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8459163D2F27EB9600069500 /* Build configuration list for PBXProject "FoodSuitabilityScanner_W1974891" */ = {
+		8459163D2F27EB9600069500 /* Build configuration list for PBXProject "FoodSuitabilityScanner" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8459164B2F27EB9700069500 /* Debug */,
@@ -339,7 +339,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8459164D2F27EB9700069500 /* Build configuration list for PBXNativeTarget "FoodSuitabilityScanner_W1974891" */ = {
+		8459164D2F27EB9700069500 /* Build configuration list for PBXNativeTarget "FoodSuitabilityScanner" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8459164E2F27EB9700069500 /* Debug */,
