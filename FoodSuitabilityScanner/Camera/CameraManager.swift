@@ -6,14 +6,15 @@
 //
 
 import AVFoundation //working with time-based audiovisual media, I'm using the camera and barcode function
+import SwiftUI
 
-
-class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
+class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate {
     let session = AVCaptureSession()
     var onBarcodeScan: ((String)->Void)? //closure
     private var isScan = false
     
-    private let metadataOutput = AVCaptureMetadataOutput()
+    let metadataOutput = AVCaptureMetadataOutput()
+    
     
     
     func requestPermission(){ //permission handling
@@ -90,7 +91,10 @@ class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
             metadataOutput.metadataObjectTypes = desiredTypes.filter{
                 supportedTypes.contains( $0 )
             }
-                    }
+        }
+        
+            
+        
         session.commitConfiguration()
     }
     
@@ -102,21 +106,16 @@ class CameraManager:NSObject, AVCaptureMetadataOutputObjectsDelegate {
         guard let metadataObject = metadataObjects.first as? AVMetadataMachineReadableCodeObject, let barcodeValue = metadataObject.stringValue else { return }
         
         isScan = true
-        stop()
+        stop() // might remove for a responsive camera scan rather than freezing each time 
         
         onBarcodeScan?(barcodeValue)
+        
+        
+                
+        
+    }
+    func resetScan(){
         isScan = false
-        
-        BarcodeProcessor.getBarcode(barcode: barcodeValue) { (result) in
-            switch result {
-            case .success(let product):
-                print("Product found: \(product.product_name ?? "Unknown")")
-            case .failure(let error):
-                print("Error: \(error)")
-            }
-        }
-        
-        
     }
 
     
