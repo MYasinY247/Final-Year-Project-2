@@ -7,14 +7,21 @@
 
 import AVFoundation //working with time-based audiovisual media, I'm using the camera and barcode function
 import SwiftUI
+import Vision
 
-class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate {
+class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVideoDataOutputSampleBufferDelegate {
     let session = AVCaptureSession()
     var onBarcodeScan: ((String)->Void)? //closure
     private var isScan = false
-    
+    private let videoOutput = AVCaptureVideoDataOutput()
+    var scanMode: ScanMode = .idle
     let metadataOutput = AVCaptureMetadataOutput()
     
+    enum ScanMode {
+        case idle
+        case barcode
+        case ingredients
+    }
     
     
     func requestPermission(){ //permission handling
@@ -80,21 +87,32 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate {
             print("failed to input")
         }
         
-        if session.canAddOutput(metadataOutput) {
-            session.addOutput(metadataOutput)
-            print("metadata added")
+        switch scanMode {
             
-            metadataOutput.setMetadataObjectsDelegate(self, queue: .main)
-            let supportedTypes = metadataOutput.availableMetadataObjectTypes
-            let desiredTypes = [AVMetadataObject.ObjectType.qr, AVMetadataObject.ObjectType.ean13, AVMetadataObject.ObjectType.ean8, AVMetadataObject.ObjectType.upce, AVMetadataObject.ObjectType.code128]
-            
-            metadataOutput.metadataObjectTypes = desiredTypes.filter{
-                supportedTypes.contains( $0 )
+        case .idle:
+            break
+        
+        case .barcode:
+            if session.canAddOutput(metadataOutput) {
+                session.addOutput(metadataOutput)
+                print("metadata added")
+                
+                metadataOutput.setMetadataObjectsDelegate(self, queue: .main)
+                let supportedTypes = metadataOutput.availableMetadataObjectTypes
+                let desiredTypes = [AVMetadataObject.ObjectType.qr, AVMetadataObject.ObjectType.ean13, AVMetadataObject.ObjectType.ean8, AVMetadataObject.ObjectType.upce, AVMetadataObject.ObjectType.code128]
+                
+                metadataOutput.metadataObjectTypes = desiredTypes.filter{
+                    supportedTypes.contains( $0 )
+                }
+            }
+        
+        case .ingredients:
+            if session.canAddOutput(videoOutput) {
+                session.addOutput(videoOutput)
+                print("video output added")
+                videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
             }
         }
-        
-            
-        
         session.commitConfiguration()
     }
     
@@ -109,15 +127,40 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate {
         stop() // might remove for a responsive camera scan rather than freezing each time 
         
         onBarcodeScan?(barcodeValue)
+    }
+    
+    
+    
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        guard scanMode == .ingredients else { return }
         
+        guard let pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         
-                
+        let request = VNRecognizeTextRequest{ (request, error) in
+            guard let observations = request.results as? [VNRecognizedTextObservation] else { return }
+            
+            let recognizedText = observations.compactMap{observations in observations.topCandidates(1).first?.string}.joined(separator: "\n")
+            
+            self.onBarcodeScan?(recognizedText)
+            
+        }
+        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
+        try? handler.perform([request])
+        
         
     }
+    
     func resetScan(){
         isScan = false
     }
-
+    
+    func switchCameraMode(to newMode : ScanMode){
+        stop()
+        resetScan()
+        scanMode = newMode
+        configureSession()
+        start()
+    }
     
     
 }

@@ -10,6 +10,7 @@ import SwiftUI
 struct ScanView: View {
     @State var scannedProduct = ""
     @State private var cameraManager = CameraManager()
+    @State private var scanMode = CameraManager.ScanMode.idle
     
     var body: some View {
         ZStack{
@@ -28,8 +29,10 @@ struct ScanView: View {
             RoundedRectangle(cornerRadius: 10)
                 .stroke(Color.white)
                 .frame(width: 300, height: 200)
+            
             VStack{
                 Spacer()
+                
                 Text(scannedProduct.isEmpty ? "Scan a barcode" : "Scanned: \(scannedProduct)")
                     .padding()
                     .background(Color.gray.opacity(0.7))
@@ -37,15 +40,33 @@ struct ScanView: View {
                     .cornerRadius(10)
                     .padding()
                 
+                HStack(spacing: 40){
+                    Button("Barcode"){
+                        scanMode = .barcode
+                        scannedProduct = ""
+                        cameraManager.switchCameraMode(to: .barcode)
+                    }
+                    
+                    Button("Ingredients"){
+                        scanMode = .ingredients
+                        scannedProduct = ""
+                        cameraManager.switchCameraMode(to: .ingredients)
+                        
+                    }
+                    
+                }
+                
+                
+                
             }
         }
                 .onAppear {
                     cameraManager.requestPermission()
-                    cameraManager.configureSession()
-                    cameraManager.resetScan()
-                    cameraManager.start()
+                    cameraManager.switchCameraMode(to: .idle)
                     
                     cameraManager.onBarcodeScan = { barcodeValue in
+                        guard scanMode == .barcode else { return }
+                        
                         BarcodeProcessor.getBarcode(barcode: barcodeValue) { result in
                             DispatchQueue.main.async{
                                 switch result {
