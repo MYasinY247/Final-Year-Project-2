@@ -12,7 +12,9 @@ import Vision
 class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVideoDataOutputSampleBufferDelegate {
     let session = AVCaptureSession()
     var onBarcodeScan: ((String)->Void)? //closure
-    private var isScan = false
+    var onIngredientScan: ((String)->Void)? //closure
+    private var barcodeScan = false
+    private var processingIngredient = false
     private let videoOutput = AVCaptureVideoDataOutput()
     var scanMode: ScanMode = .idle
     let metadataOutput = AVCaptureMetadataOutput()
@@ -119,12 +121,12 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
     //stops scanning when barcode is detected
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         
-        guard !isScan else { return }
+        guard !barcodeScan else { return }
         
         guard let metadataObject = metadataObjects.first as? AVMetadataMachineReadableCodeObject, let barcodeValue = metadataObject.stringValue else { return }
         
-        isScan = true
-        stop() // might remove for a responsive camera scan rather than freezing each time 
+        barcodeScan = true
+        stop() // might remove for a responsive camera scan rather than freezing each time
         
         onBarcodeScan?(barcodeValue)
     }
@@ -132,31 +134,52 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
     
     
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        let keywords = ["ingredients", "contains:", "contain"]
+        var found = false
         guard scanMode == .ingredients else { return }
+        guard !processingIngredient else { return }
         
-        guard let pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        self.processingIngredient = true
+        
+        guard let pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            self.processingIngredient = false
+            return
+        }
         
         let request = VNRecognizeTextRequest{ (request, error) in
+            
+            
+            
             guard let observations = request.results as? [VNRecognizedTextObservation] else { return }
             
             let recognizedText = observations.compactMap{observations in observations.topCandidates(1).first?.string}.joined(separator: "\n")
             
-            self.onBarcodeScan?(recognizedText)
+            let scannedText = recognizedText.lowercased()
             
+            let containsKeywords = keywords.contains{scannedText.contains($0)}
+            if containsKeywords{
+                print("\(recognizedText)\n--")
+            
+            
+            
+                
+                DispatchQueue.main.async{
+                    self.onIngredientScan?(recognizedText)
+                    //                self.stop()
+                }
+            }
+            self.processingIngredient = false
         }
+        
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
         try? handler.perform([request])
-        
-        
     }
     
-    func resetScan(){
-        isScan = false
-    }
+   
     
     func switchCameraMode(to newMode : ScanMode){
         stop()
-        resetScan()
+        barcodeScan = false
         scanMode = newMode
         configureSession()
         start()
