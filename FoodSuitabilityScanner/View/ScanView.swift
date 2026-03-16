@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ScanView: View {
+    @EnvironmentObject private var diet: DietaryPreferencesModel
+    
     @State var scannedProduct = ""
     @State private var cameraManager = CameraManager()
     @State private var scanMode = CameraManager.ScanMode.idle
@@ -76,7 +78,15 @@ struct ScanView: View {
                                         scannedProduct = "Name not found on database"
                                     }
                                     else{
-                                        scannedProduct = name
+                                        let result = SuitabilityChecker.check(product: product, filters: diet.activeFilters)
+                                        switch result{
+                                        case .suitable:
+                                            scannedProduct = "\(name) is suitable for you"
+                                        case .notSuitable(reasons: let reasons):
+                                            scannedProduct = "\(name) is not suitable for you because: \(reasons.joined(separator: ", "))"
+                                        case .unknown:
+                                            scannedProduct = "Not enough data in database for \(name)"
+                                        }
                                     }
                                     
                                 case .failure(let error):
@@ -98,5 +108,6 @@ struct ScanView: View {
 }
 #Preview {
     ScanView()
+        .environmentObject(DietaryPreferencesModel())
 }
 

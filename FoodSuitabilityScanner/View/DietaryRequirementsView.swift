@@ -16,60 +16,87 @@ struct DietaryOptions: Identifiable {
 
 
 struct DietaryRequirementsView: View {
-    // lifestyle, single selection
-    @State private var selectedLifestyle: String? = nil
+    @EnvironmentObject private var diet: DietaryPreferencesModel
     
-    //allergies, multi selection
-    @State private var isNutsOn = false
-    @State private var isGlutenOn = false
-    @State private var isDairyOn = false
     
-    //religions, multi selection
-    @State private var isHalalOn = false
-    @State private var isKosherOn = false
+    @State private var showInfo = false
     
     //Dietary Option Defintions
-    let LifestyleOptions: [DietaryOptions] = [
+    let lifestyleOptions: [DietaryOptions] = [
         DietaryOptions(name: "Vegan", description: "No animal products, including meat, poultry, fish, eggs, dairy, or honey."),
         DietaryOptions(name: "Vegetarian", description: "No meat, poultry, fish, eggs, dairy, or honey."),
         DietaryOptions(name: "Pescatarian", description: "No meat but includes fish and seafoods")]
     
-    let AllergyOptions: [DietaryOptions] = [
+    let allergyOptions: [DietaryOptions] = [
         DietaryOptions(name: "Nuts", description: "Contains nuts, seeds, or tree nuts."),
         DietaryOptions(name: "Gluten", description: "Contains wheat, barley, rye, or spelt."),
         DietaryOptions(name: "Dairy", description: "Contains milk, cheese, yogurt, or cream.")]
     
-    let ReligionOptions: [DietaryOptions] = [
+    let religionOptions: [DietaryOptions] = [
         DietaryOptions(name: "Halal", description: "Follows Islamic dietary laws, which prohibit the consumption of pork and other meats considered haram (forbidden in Islam)."),
         DietaryOptions(name: "Kosher", description: "Follows Jewish dietary laws, which prohibit the consumption of pork and shellfish considered chametz (leavened bread or dairy products).")]
     
     //options put together for the info button
-    var allOptions: [DietaryOptions] {LifestyleOptions + AllergyOptions + ReligionOptions}
+    var allOptions: [DietaryOptions] {lifestyleOptions + allergyOptions + religionOptions}
     
     var body: some View {
         NavigationView{
             ZStack{
                 List{
+                    //lifestyle
                     Section(header: Text("Lifestyle")
-                        .font(.title))
+                        .font(.headline))
                     {
-                        ForEach(LifestyleOptions) { option in
+                        ForEach(lifestyleOptions) { option in
                             DietaryToggle(
                                 name : option.name,
-                                isOn : selectedLifestyle == option.name,
+                                isOn : diet.selectedLifestyle == option.name,
                                 toggleOn:{
-                                    if selectedLifestyle == option.name{
-                                        selectedLifestyle = nil
-                                    }
-                                    else{
-                                        selectedLifestyle = option.name
-                                    }
+                                    diet.toggleLifestyle(option.name)
                                 }
                             )
                         }
                     }
+                    
+                    //allergies
+                    Section(header: Text("Allergies")
+                        .font(.headline))
+                    {
+                        DietaryToggle(name: "Nuts", isOn: diet.isNutsOn, toggleOn: {diet.isNutsOn.toggle();diet.save()})
+                        DietaryToggle(name: "Gluten", isOn: diet.isGlutenOn, toggleOn: {diet.isGlutenOn.toggle();diet.save()})
+                        DietaryToggle(name: "Dairy", isOn: diet.isDairyOn, toggleOn: {diet.isDairyOn.toggle();diet.save()})
+                        
+                    }
+                    
+                    //religion
+                    Section(header: Text("Religion")
+                        .font(.headline))
+                    {
+                        DietaryToggle(name: "Halal", isOn: diet.isHalalOn, toggleOn: {diet.isHalalOn.toggle();diet.save()})
+                        DietaryToggle(name: "Kosher", isOn: diet.isKosherOn, toggleOn: {diet.isKosherOn.toggle();diet.save()})
+                    }
+                    
+                }
+                if showInfo{
+                    ShowInfoPopUp(
+                        info: allOptions,
+                        onTap: {
+                            showInfo = false
+                        }
+                    )
                 }
             }
+            .navigationTitle("Edit Your Diet")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar{
+                ToolbarItem(placement: .navigationBarLeading){
+                    Button(action: {showInfo = true}){
+                        Image(systemName: "info.circle")
+                            .foregroundColor(.gray)
+                    }
+                }
+            }
+            
         }
     }
 }
@@ -86,14 +113,77 @@ struct DietaryToggle: View {
             
             Toggle("", isOn: Binding(get: {isOn}, set: {_ in toggleOn()}))
                 .labelsHidden()
-                .hidden()
+                
             
         }
         .padding()
     }
 }
 
+struct ShowInfoPopUp: View {
+    let info : [DietaryOptions]
+    let onTap: () -> Void
+
+    var body: some View{
+        ZStack{
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    onTap()
+                }
+            
+            VStack(alignment: .leading){
+                HStack{
+                    Text("Dietary Requirements")
+                        .font(.title2)
+                    Spacer()
+                    
+                    Button(action: onTap){
+                        Image(systemName: "xmark")
+                            .font(.system(size:14, weight: .bold))
+                            .foregroundColor(.gray)
+                            .padding()
+                    }
+                }
+                .padding()
+                
+                ScrollView{
+                    VStack(alignment: .leading, spacing:10){
+                        ForEach(info) { item in
+                            VStack(alignment: .leading, spacing: 4)
+                            {
+                                Text(item.name)
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                                Text(item.description)
+                                    .font(.body)
+                            }
+                            if item.id != self.info.last!.id{
+                                Divider()
+                            }
+                        }
+                    }
+                }
+                .frame(maxHeight: 360)
+                
+            }
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 16)
+                .fill(Color(.systemBackground)))
+            .padding()
+        }
+        
+        
+    
+        
+            
+        
+        
+    }
+}
+
 
 #Preview {
     DietaryRequirementsView()
+        .environmentObject(DietaryPreferencesModel())
 }

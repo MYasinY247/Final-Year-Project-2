@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct FoodSuitabilityScannerApp: App {
+    @StateObject private var diet = DietaryPreferencesModel()
     var body: some Scene {
         WindowGroup {
             NavBarView()
+                .environmentObject(diet)
         }
     }
 }
