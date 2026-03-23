@@ -135,7 +135,6 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
     
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         let keywords = ["ingredients", "contains:", "contain"]
-        var found = false
         guard scanMode == .ingredients else { return }
         guard !processingIngredient else { return }
         
@@ -156,16 +155,22 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
             
             let scannedText = recognizedText.lowercased()
             
-            let containsKeywords = keywords.contains{scannedText.contains($0)}
-            if containsKeywords{
-                print("\(recognizedText)\n--")
+            if let keyword = keywords.first (where: {scannedText.contains($0)}){
+                let parts = recognizedText.components(separatedBy: keyword)
+                if parts.count>1{
+                    let ingredientSection = parts[1].lowercased()
+                    
+                    let knownIngredients = SuitabilityChecker.nonVeganIngredients + SuitabilityChecker.nonVegetarianIngredients + SuitabilityChecker.nonPescatarianIngredients + SuitabilityChecker.dairy + SuitabilityChecker.nut + SuitabilityChecker.gluten + SuitabilityChecker.otherAnimal + SuitabilityChecker.haramIngredients + SuitabilityChecker.nonKosherIngredients
+                    
+                    let found = knownIngredients.filter{ingredient in ingredientSection.contains(ingredient)}
+                    
+                    if !found.isEmpty{
+                        DispatchQueue.main.async{
+                            self.onIngredientScan?(found.joined(separator: ", "))
+                        }
+                    
+                    }
             
-            
-            
-                
-                DispatchQueue.main.async{
-                    self.onIngredientScan?(recognizedText)
-                    //                self.stop()
                 }
             }
             self.processingIngredient = false

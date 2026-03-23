@@ -19,6 +19,7 @@ struct FoodProduct : Codable{
     let labels_tags: [String]?
     let allergens_tags: [String]?
     let ingredients_analysis_tags: [String]?
+    let image_url: String?
 }
 enum OFFError: Error {
     case productNotFound
