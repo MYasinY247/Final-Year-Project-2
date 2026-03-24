@@ -82,9 +82,15 @@ struct HistoryRow: View{
                 if !item.flaggedIngredients.isEmpty{
                     Text(item.flaggedIngredients)
                         .font(.caption)
-                        .foregroundColor(.orange)
+                        .foregroundColor(.red)
                         .lineLimit(2)
-                    
+                
+                }
+                if !item.activeFilters.isEmpty{
+                    Text("Filters: \(item.activeFilters)")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .lineLimit(2)
                 }
                     
             }
@@ -95,6 +101,7 @@ struct HistoryRow: View{
                 .foregroundColor(resultColour(for: item.suitabilityResult))
                 .padding()
                 .background(resultColour(for: item.suitabilityResult).opacity(0.3))
+                .clipShape(Capsule())
             
         }
         .padding()
@@ -105,7 +112,7 @@ struct HistoryRow: View{
         case "Suitable":
             return .green
         case "Not Suitable":
-            return .orange
+            return .red
         default:
             return .gray
         }

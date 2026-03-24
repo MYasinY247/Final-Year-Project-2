@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct NavBarView: View {
     var body: some View {
@@ -31,4 +32,6 @@ struct NavBarView: View {
 }
 #Preview {
     NavBarView()
+        .environmentObject(DietaryPreferencesModel())
+        .modelContainer(for: ScannedProduct.self, inMemory: true)
 }

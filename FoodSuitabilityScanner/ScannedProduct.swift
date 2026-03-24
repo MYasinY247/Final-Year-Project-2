@@ -15,13 +15,15 @@ class ScannedProduct{
     var suitabilityResult:String
     var flaggedIngredients: String
     var imageURL: String
+    var activeFilters: String
     
-    init(productName: String, dateScanned: Date, suitabilityResult: String, flaggedIngredients: String, imageURL: String) {
+    init(productName: String, dateScanned: Date, suitabilityResult: String, flaggedIngredients: String, imageURL: String, activeFilters: String) {
         self.productName = productName
         self.dateScanned = dateScanned
         self.suitabilityResult = suitabilityResult
         self.flaggedIngredients = flaggedIngredients
         self.imageURL = imageURL
+        self.activeFilters = activeFilters
     }
     
 }

@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		845916422F27EB9600069500 /* FoodSuitabilityScanner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FoodSuitabilityScanner.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		845916422F27EB9600069500 /* FoodSuitabilityScanner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = FoodSuitabilityScanner.app; path = "/Users/yasin/Documents/Uni/Year 3/Semester 1/Final Year Project/Final Year Project/FoodSuitabilityScanner_W1974891/build/Debug-iphoneos/FoodSuitabilityScanner.app"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -46,16 +46,7 @@
 			isa = PBXGroup;
 			children = (
 				845916442F27EB9600069500 /* FoodSuitabilityScanner */,
-				845916432F27EB9600069500 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		845916432F27EB9600069500 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				845916422F27EB9600069500 /* FoodSuitabilityScanner.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -108,7 +99,7 @@
 			mainGroup = 845916392F27EB9600069500;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 845916432F27EB9600069500 /* Products */;
+			productRefGroup = 845916392F27EB9600069500;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (

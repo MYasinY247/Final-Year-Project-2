@@ -105,7 +105,7 @@ struct ScanView: View {
             //pop up
             if resultPopup, let data = scanResultData {
                 ScanResultPopUp(data: data, isSpeechOn: isSpeechOn){
-                    isSpeechOn = false
+                    isTorchOn = false
                     resultPopup = false
                     scanResultData = nil
                     cameraManager.switchCameraMode(to: scanMode)
@@ -117,7 +117,7 @@ struct ScanView: View {
                     cameraManager.requestPermission()
                     haptic.prepare()
                   
-                    cameraManager.switchCameraMode(to: .idle)
+                    cameraManager.switchCameraMode(to: scanMode)
                     
                     cameraManager.onBarcodeScan = { barcodeValue in
                         guard scanMode == .barcode else { return }
@@ -151,7 +151,7 @@ struct ScanView: View {
                                         if isHapticOn{
                                             haptic.notificationOccurred(.success)
                                         }
-                                        let entry = ScannedProduct(productName: name, dateScanned: Date(), suitabilityResult: resultString, flaggedIngredients: flagged, imageURL: product.image_url ?? "")
+                                        let entry = ScannedProduct(productName: name, dateScanned: Date(), suitabilityResult: resultString, flaggedIngredients: flagged, imageURL: product.image_url ?? "", activeFilters: diet.activeFilters.joined(separator: ", "))
                                         modelContext.insert(entry)
                                         
                                         //show result pop up
@@ -159,8 +159,12 @@ struct ScanView: View {
                                         resultPopup = true
                                     }
                                     
-                                case .failure(let error):
-                                    scannedProduct = "product not found on database: \(error.localizedDescription)"
+                                case .failure:
+                                    if isHapticOn{
+                                        haptic.notificationOccurred(.error)
+                                    }
+                                    scanResultData = ScanResultData(productName: "Product Not Found", imageURL: "", ingredients: "This product could not be found on the database. Try scanning again or use the ingredient scanner.", result: .unknown, flaggedIngredients: "")
+                                    resultPopup = true
                                 }
                             }
                         }
