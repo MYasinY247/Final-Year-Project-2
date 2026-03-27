@@ -92,6 +92,11 @@ struct HistoryRow: View{
                         .foregroundColor(.gray)
                         .lineLimit(2)
                 }
+                else{
+                    Text("No filters active")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
                     
             }
             Spacer()

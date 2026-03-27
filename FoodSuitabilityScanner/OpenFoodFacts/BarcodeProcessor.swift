@@ -30,10 +30,7 @@ struct BarcodeProcessor {
             DispatchQueue.main.async(){
                 do{
                     let decoded = try JSONDecoder().decode(OFFResponse.self, from: data)
-                    if let product = decoded.product{
-                        print("Decoded Product: \(product)")
-                                                print("Product name: \(product.product_name ?? "No name available")")  
-                                                
+                    if let product = decoded.product{                        
                         completion(.success(product))
                     }
                     else{

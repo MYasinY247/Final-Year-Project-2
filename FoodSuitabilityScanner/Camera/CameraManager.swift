@@ -26,21 +26,13 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
     }
     
     
-    func requestPermission(){ //permission handling
-        AVCaptureDevice.requestAccess(for: .video) { granted in
-            DispatchQueue.main.async {
-                if granted {
-                    print("Camera access granted.")
-                } else {
-                    print("Camera access denied.")
-                }
-            }
-        }
+    func requestPermission(){ //permission handling to access the camera, no logging required
+        AVCaptureDevice.requestAccess(for: .video){_ in}
+        
     }
     func start(){ //starting capture session
         DispatchQueue.global(qos: .userInitiated).async {
                 if !self.session.isRunning {
-                    print("camera is running")
                     self.session.startRunning()
                 }
         }
@@ -49,7 +41,6 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
     func stop(){ //ending capture session
         if session.isRunning
         {
-            print("camera stopped running")
             session.stopRunning()
         }
     }
@@ -63,7 +54,6 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
             let input = try AVCaptureDeviceInput(device: device)
             return input
         } catch {
-            print("Error setting up camera input: \(error)")
             return nil
         }
         
@@ -79,14 +69,8 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
         
         if let videoInput = cameraSetUp() {
             if session.canAddInput(videoInput) {
-                session.addInput(videoInput)
-                print("Video added")
-            } else {
-                print("Could not add video input to session")
+                session.addInput(videoInput)   
             }
-            
-        } else{
-            print("failed to input")
         }
         
         switch scanMode {
@@ -97,7 +81,7 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
         case .barcode:
             if session.canAddOutput(metadataOutput) {
                 session.addOutput(metadataOutput)
-                print("metadata added")
+                
                 
                 metadataOutput.setMetadataObjectsDelegate(self, queue: .main)
                 let supportedTypes = metadataOutput.availableMetadataObjectTypes
@@ -111,7 +95,7 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
         case .ingredients:
             if session.canAddOutput(videoOutput) {
                 session.addOutput(videoOutput)
-                print("video output added")
+                
                 videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
             }
         }

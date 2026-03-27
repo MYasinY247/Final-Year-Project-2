@@ -20,7 +20,7 @@ struct SuitabilityChecker {
     static let fish = ["fish", "salmon", "tuna", "shrimp", "prawn", "lobster", "crab", "shellfish"]
     static let dairy = ["milk", "cheese", "butter", "cream", "whey", "casein"]
     static let otherAnimal = ["egg", "honey", "gelatin"]
-    static let nut = ["nut", "peanut", "almond", "cashew", "walnut","hazelnut", "pecan", "pistachio", "macadamia", "brazil"]
+    static let nut = ["hazelnut", "almond", "cashew","chestnut", "walnut", "pine nut","pecan", "pistachio", "peanut", "macadamia", "brazil nut", "may contain nuts"]
     static let gluten = ["gluten", "wheat", "barley", "rye","spelt", "durum", "semolina", "farro", "kamut"]
     
     static let nonVeganIngredients: [String] = pork + meat + fish + dairy + otherAnimal
