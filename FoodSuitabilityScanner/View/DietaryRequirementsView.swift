@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+
+//holds name and desc of each product, identifiable lets it be used in the ForEach loop
 struct DietaryOptions: Identifiable {
     var id = UUID()
     var name: String
@@ -14,14 +16,15 @@ struct DietaryOptions: Identifiable {
 }
 
 
+//lets user set their dietary preferences, reads and writes to DietaryPreferencesModel via @EnvironmentObject to ensure changes made across app
 
 struct DietaryRequirementsView: View {
     @EnvironmentObject private var diet: DietaryPreferencesModel
     
-    
+    //controls info popup
     @State private var showInfo = false
     
-    //Dietary Option Defintions
+    //Dietary Option Defintions, used in toggle rows and info popup
     let lifestyleOptions: [DietaryOptions] = [
         DietaryOptions(name: "Vegan", description: "No animal products, including meat, poultry, fish, eggs, dairy, or honey."),
         DietaryOptions(name: "Vegetarian", description: "No meat, poultry or fish."),
@@ -43,7 +46,7 @@ struct DietaryRequirementsView: View {
         NavigationView{
             ZStack{
                 List{
-                    //lifestyle
+                    //lifestyle single selection, handled by toggleLifestyle from DietaryPreferencesModel
                     Section(header: Text("Lifestyle")
                         .font(.headline))
                     {
@@ -58,7 +61,7 @@ struct DietaryRequirementsView: View {
                         }
                     }
                     
-                    //allergies
+                    //allergies, multi select
                     Section(header: Text("Allergies")
                         .font(.headline))
                     {
@@ -68,7 +71,7 @@ struct DietaryRequirementsView: View {
                         
                     }
                     
-                    //religion
+                    //religion, multi select
                     Section(header: Text("Religion")
                         .font(.headline))
                     {
@@ -77,6 +80,7 @@ struct DietaryRequirementsView: View {
                     }
                     
                 }
+                //info about each diet pop up 
                 if showInfo{
                     ShowInfoPopUp(
                         info: allOptions,
@@ -89,7 +93,7 @@ struct DietaryRequirementsView: View {
             .navigationTitle("Edit Your Diet")
             .navigationBarTitleDisplayMode(.large)
             .toolbar{
-                ToolbarItem(placement: .navigationBarLeading){
+                ToolbarItem(placement: .topBarLeading){
                     Button(action: {showInfo = true}){
                         Image(systemName: "info.circle")
                             .foregroundColor(.gray)
@@ -100,6 +104,7 @@ struct DietaryRequirementsView: View {
         }
     }
 }
+// reusable component used for the 3 groups of diets, and shows if toggle switch is on or off
 struct DietaryToggle: View {
     let name : String
     let isOn : Bool
@@ -111,6 +116,7 @@ struct DietaryToggle: View {
                 .font(.body)
             Spacer()
             
+            //toggle displays the current state it is in and calls toggleOn when tapped
             Toggle("", isOn: Binding(get: {isOn}, set: {_ in toggleOn()}))
                 .labelsHidden()
                 
@@ -120,12 +126,15 @@ struct DietaryToggle: View {
     }
 }
 
+// shows a scrollable list of the explanation of each dietary requirement
 struct ShowInfoPopUp: View {
     let info : [DietaryOptions]
     let onTap: () -> Void
 
     var body: some View{
         ZStack{
+            
+            //dimmed background
             Color.black.opacity(0.4)
                 .ignoresSafeArea()
                 .onTapGesture {
@@ -147,6 +156,7 @@ struct ShowInfoPopUp: View {
                 }
                 .padding()
                 
+                //scrollable list of all the options
                 ScrollView{
                     VStack(alignment: .leading, spacing:10){
                         ForEach(info) { item in
@@ -158,6 +168,8 @@ struct ShowInfoPopUp: View {
                                 Text(item.description)
                                     .font(.body)
                             }
+                            
+                            //a divider placed after each item but not the last one
                             if item.id != self.info.last!.id{
                                 Divider()
                             }

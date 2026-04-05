@@ -84,7 +84,7 @@ struct SettingsView: View {
                     Button(action: {clearHistoryAlert = true}){
                         Label{
                             VStack(alignment: .leading ){
-                                Text("Clear Scan History")
+                                Text("Clear History")
                                     .foregroundStyle(Color.red)
                                 Text("Removes all entries from the History")
                                     .font(.caption)
@@ -106,6 +106,20 @@ struct SettingsView: View {
                     
                 } message: {
                     Text("This will remove all scan history entries.")
+                }
+
+                Section{
+                    Label{
+                        VStack(alignment: .leading)
+                        {
+                            Text("Important Notice")
+                            Text("This app is a tool to assist decision making only and should not be treated as a definitive source of verification. Always check product labels and ask for clarification if you have dietary, allergen, or religious requirements.")
+                                .font(.caption)
+                        }
+                    }
+                icon: {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                    }
                 }
             }
             .listStyle(.insetGrouped)

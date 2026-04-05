@@ -7,10 +7,11 @@
 
 import SwiftUI
 import AVFoundation
-//scan result data
+
+//needed to display result of scan, created in scanview and passed to scanresultpopup
 struct ScanResultData{
     let productName: String
-    let imageURL: String
+    let imageURL: String?
     let ingredients: String
     let result: SuitabilityResult
     let flaggedIngredients: String
@@ -18,13 +19,15 @@ struct ScanResultData{
     
 }
 
+//displays outcome of scan as an overlay, if tts enabled, result is read out
 struct ScanResultPopUp: View {
     let data:ScanResultData
-    var isSpeechOn : Bool
-    let onDismiss: () -> Void
+    var isSpeechOn : Bool // passed from scanview, tts is active if true
+    let onDismiss: () -> Void  //called when user exits the popup
     
-    private let speechSynthesizer = AVSpeechSynthesizer()
+    private let speechSynthesizer = AVSpeechSynthesizer() // reads the result aloud
     
+    //using if statement makes error, returns true if product is unknown
     var isUnknown: Bool{
         switch data.result {
         case .unknown:
@@ -47,7 +50,7 @@ struct ScanResultPopUp: View {
             //pop up
             VStack( spacing: 20){
                 HStack{
-                    //x button
+                    //x button to dismiss
                     Spacer()
                     Button(action: onDismiss){
                         Image(systemName: "xmark")
@@ -59,21 +62,24 @@ struct ScanResultPopUp: View {
                    
                     
                 }
-                //result icon
+                // green tick, red X, amber triangle for unknown
                 resultIcon
                     .font(.system(size: 50))
                     .padding()
                 
                 Divider()
                 
+                //result message beneath icon
                 Text(resultTitle)
                     .font(.title3)
                     .multilineTextAlignment(.center)
                 
-                //product info
+                //product info shown for suitable and unsuitable only, no useful info to show for unknown products
                 if !isUnknown{
                     HStack(alignment: .top, spacing: 10){
-                        AsyncImage(url: URL(string: data.imageURL)){ image in
+                        //product image loaded from url
+                        
+                        AsyncImage(url: URL(string: data.imageURL ?? "")){ image in
                             image.resizable().scaledToFit()
                         }
                         placeholder: {
@@ -86,6 +92,7 @@ struct ScanResultPopUp: View {
                         
                         
                         VStack(alignment: .leading, spacing: 3){
+                            //product name
                             Text(data.productName)
                                 .font(.subheadline)
                                 .lineLimit(1)
@@ -99,6 +106,7 @@ struct ScanResultPopUp: View {
                             }
                             .frame(maxHeight: 50)
                             
+                            //flagged ingredients shown in red
                             if !data.flaggedIngredients.isEmpty{
                                 Text("Flagged: \(data.flaggedIngredients)")
                                     .font(.caption)
@@ -120,7 +128,9 @@ struct ScanResultPopUp: View {
                 RoundedRectangle(cornerRadius:15)
                 .fill(Color(.systemBackground))
                 .shadow(color: .black.opacity(0.2), radius: 20, x: 0))
+            
             .padding()
+            //result spoken if tts enabled
             .onAppear{
                 if isSpeechOn{
                     speakResult()
@@ -129,6 +139,7 @@ struct ScanResultPopUp: View {
             
         }
     }
+    //returns icon depending on outcome
     private var resultIcon: some View {
         switch data.result {
         case .suitable:
@@ -142,6 +153,7 @@ struct ScanResultPopUp: View {
                 .foregroundStyle(Color(.systemOrange))
         }
     }
+    //returns result message to show beneath icon
     private var resultTitle: String{
         switch data.result{
         case .suitable:
@@ -153,22 +165,22 @@ struct ScanResultPopUp: View {
         }
     }
     
-    private var resultColour: Color{
-        switch data.result{
-        case .suitable:
-                .green
-        case .notSuitable:
-                .red
-        case .unknown:
-                .orange
-        }
-    }
-    //text to speech
+//May not even need
+    //returns colour to be used with each outcome
+//    private var resultColour: Color{
+//        switch data.result{
+//        case .suitable:
+//                .green
+//        case .notSuitable:
+//                .red
+//        case .unknown:
+//                .orange
+//        }
+//    }
+    
+    //text to speech, for unsuitable results, includes the unsuitable ingredients
     private func speakResult(){
-        
         var tts = ""
-            
-            
         switch data.result {
         case .notSuitable:
             tts = "\(data.productName). Flagged ingredients: \(data.flaggedIngredients)"
@@ -178,11 +190,11 @@ struct ScanResultPopUp: View {
             tts = "Status unclear, please double check the ingredients"
         
         }
-
-            let utterance = AVSpeechUtterance(string: tts)
-            utterance.voice = AVSpeechSynthesisVoice(language: "en-GB")
-            utterance.rate = 0.5
-            speechSynthesizer.speak(utterance)
+        //speed the tts reads at
+        let utterance = AVSpeechUtterance(string: tts)
+        utterance.voice = AVSpeechSynthesisVoice(language: "en-GB")
+        utterance.rate = 0.5
+        speechSynthesizer.speak(utterance)
         
         
     }

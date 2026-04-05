@@ -22,6 +22,7 @@ struct ScanView: View {
     @State private var resultPopup = false
     @State private var scanResultData: ScanResultData? = nil
 
+    @State private var showAlert: Bool = false //used for showing camera error
     
     private let speechSynthesizer = AVSpeechSynthesizer()
     private let haptic = UINotificationFeedbackGenerator()
@@ -127,37 +128,44 @@ struct ScanView: View {
                                 switch result {
                                 case .success(let product):
                                     let name = product.product_name ?? "Unknown"
-                                    if name.isEmpty {
-                                        scannedProduct = "Name not found on database"
+//                                    if name.isEmpty {
+//                                        // = "Name not found on database"
+//                                    }
+                                
+                                    let result = SuitabilityChecker.check(product: product, filters: diet.activeFilters)
+                                    
+                                    let resultString : String
+                                    let flagged : String
+                                    
+                                    switch result{
+                                    case .suitable:
+                                        resultString = "Suitable"
+                                        flagged = ""
+                                    case .notSuitable(reasons: let reasons):
+                                        resultString = "Not Suitable"
+                                        flagged = reasons.joined(separator: ", ")
+                                    case .unknown:
+                                        resultString = "Unknown"
+                                        flagged = ""
+                                    }
+                                    //haptic feedback on successful scan
+                                    if isHapticOn{
+                                        haptic.notificationOccurred(.success)
+                                    }
+                                    if name.isEmpty{
+                                        let noNameEntry = ScannedProduct(productName: "Name not found", dateScanned: Date(), suitabilityResult: resultString, flaggedIngredients: flagged, imageURL: product.image_url ?? "", activeFilters: diet.activeFilters.joined(separator: ", "))
+                                        modelContext.insert(noNameEntry)
                                     }
                                     else{
-                                        let result = SuitabilityChecker.check(product: product, filters: diet.activeFilters)
-                                        
-                                        let resultString : String
-                                        let flagged : String
-                                        
-                                        switch result{
-                                        case .suitable:
-                                            resultString = "Suitable"
-                                            flagged = ""
-                                        case .notSuitable(reasons: let reasons):
-                                            resultString = "Not Suitable"
-                                            flagged = reasons.joined(separator: ", ")
-                                        case .unknown:
-                                            resultString = "Unknown"
-                                            flagged = ""
-                                        }
-                                        //haptic feedback on successful scan
-                                        if isHapticOn{
-                                            haptic.notificationOccurred(.success)
-                                        }
                                         let entry = ScannedProduct(productName: name, dateScanned: Date(), suitabilityResult: resultString, flaggedIngredients: flagged, imageURL: product.image_url ?? "", activeFilters: diet.activeFilters.joined(separator: ", "))
                                         modelContext.insert(entry)
-                                        
-                                        //show result pop up
-                                        scanResultData = ScanResultData(productName: name, imageURL: product.image_url ?? "", ingredients: product.ingredients_text ?? "No ingredients available", result: result, flaggedIngredients: flagged)
-                                        resultPopup = true
                                     }
+                                    
+                                    
+                                    //show result pop up
+                                    scanResultData = ScanResultData(productName: name, imageURL: product.image_url ?? "", ingredients: product.ingredients_text ?? "No ingredients available", result: result, flaggedIngredients: flagged)
+                                    resultPopup = true
+                                    
                                     
                                 case .failure:
                                     if isHapticOn{
@@ -180,16 +188,18 @@ struct ScanView: View {
                         switch result{
 
                         case .notSuitable(let reasons):
-                            flagged = reasons.joined(separator: ", ")
+                            flagged = Array(Set(reasons)).joined(separator: ", ")
                             cameraManager.stop()
                             
                         default:
                             flagged = ""
                         }
-                        scanResultData = ScanResultData(productName: "", imageURL: "", ingredients: scannedText, result: result, flaggedIngredients: flagged)
+                        scanResultData = ScanResultData(productName: "", imageURL: nil, ingredients: scannedText, result: result, flaggedIngredients: flagged)
                         resultPopup = true
-                    
                         
+                    }
+                    cameraManager.cameraSetUpFailed = {
+                        showAlert = true
                     }
                     
                 }
@@ -197,6 +207,14 @@ struct ScanView: View {
                     cameraManager.stop()
                     scannedProduct = ""
                     if isTorchOn {toggleTorch()}
+                }
+                .alert(isPresented: $showAlert){
+                    Alert(title: Text("Camera Set Up Error"),
+                          message: Text("Unable to access camera or configure scanning capabilities. Please try again later."),
+                          dismissButton: .default(Text("OK"))
+
+                    )
+                    
                 }
         
         

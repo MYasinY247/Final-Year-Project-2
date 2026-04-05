@@ -6,14 +6,14 @@
 //
 
 
-// defines data models for handling JSON responses 
+// defines data models for handling JSON responses & decodes JSON data
 
 
-struct OFFResponse: Codable{
+struct OFFResponse: Decodable{
     let product : FoodProduct?
     
 }
-struct FoodProduct : Codable{
+struct FoodProduct : Decodable{
     let product_name : String?
     let ingredients_text : String?
     let labels_tags: [String]?

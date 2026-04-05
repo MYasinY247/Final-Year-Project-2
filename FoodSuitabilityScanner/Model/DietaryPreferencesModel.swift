@@ -8,6 +8,7 @@
 import SwiftUI
 import Combine
 
+//observableobject automatically updates view when a value changes
 class DietaryPreferencesModel:ObservableObject {
     
     //lifestyle single select
@@ -22,10 +23,9 @@ class DietaryPreferencesModel:ObservableObject {
     @Published var isHalalOn: Bool = false
     @Published var isKosherOn: Bool = false
     
-    //init will load save preferences automatically
-    
+    //init will load save preferences automatically, user selection persists b/w app sessions
     init(){
-        let defaults = UserDefaults.standard
+        let defaults = UserDefaults.standard  //built in storage system, a way to store / access user data which is saved even when closing the app
         selectedLifestyle = defaults.string(forKey: "selectedLifestyle") ?? ""
         isNutsOn = defaults.bool(forKey: "isNutsOn")
         isGlutenOn = defaults.bool(forKey: "isGlutenOn")
@@ -61,6 +61,7 @@ class DietaryPreferencesModel:ObservableObject {
         return selectedLifestyle.isEmpty ? nil : selectedLifestyle
     }
     
+    //returns a list of currently active preferences
     var activeFilters: [String]{
         var filters: [String] = []
         if let lifestyle = activeLifestyle {filters.append(lifestyle)}
@@ -72,6 +73,7 @@ class DietaryPreferencesModel:ObservableObject {
         return filters
     }
     
+    //resets all the user selected preferences
     func resetAll(){
         selectedLifestyle = ""
         isNutsOn = false

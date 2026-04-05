@@ -7,15 +7,17 @@
 
 import Foundation
 
+// 3 possible outcomes after scanning
 enum SuitabilityResult
 {
     case suitable
-    case notSuitable (reasons :[String])
+    case notSuitable (reasons :[String]) //contains the reasons why the food is not suitable
     case unknown
 }
 
+//static so they can be called and shared throughout the app without needing to instantiate suitability checker multiple times
 struct SuitabilityChecker {
-    static let pork = ["pork", "pig", "lard", "bacon", "ham"]
+    static let pork = ["pork", "pig", "lard", "bacon"]
     static let meat = ["meat", "chicken", "beef"]
     static let fish = ["fish", "salmon", "tuna", "shrimp", "prawn", "lobster", "crab", "shellfish"]
     static let dairy = ["milk", "cheese", "butter", "cream", "whey", "casein"]
@@ -23,18 +25,24 @@ struct SuitabilityChecker {
     static let nut = ["hazelnut", "almond", "cashew","chestnut", "walnut", "pine nut","pecan", "pistachio", "peanut", "macadamia", "brazil nut", "may contain nuts"]
     static let gluten = ["gluten", "wheat", "barley", "rye","spelt", "durum", "semolina", "farro", "kamut"]
     
+    //combining arrays for each dietary requirement
     static let nonVeganIngredients: [String] = pork + meat + fish + dairy + otherAnimal
     static let nonVegetarianIngredients: [String] = pork + meat + fish
     static let nonPescatarianIngredients: [String] = pork + meat + ["gelatin"]
     static let haramIngredients: [String] = pork + ["alcohol", "wine", "beer", "gelatin"]
     static let nonKosherIngredients: [String] = pork + [ "shrimp", "prawn", "lobster", "crab", "shellfish", "gelatin"] 
     
+    
+    //barcode check, checks product fetched from OFF and compared against selected diet
     static func check(product: FoodProduct, filters: [String]) -> SuitabilityResult{
+        
+        //no filters set = suitable by default
         guard !filters.isEmpty else {
             return .suitable
         }
         var failedReasons: [String] = []
         
+        //extracts product info and set to lowercase
         let ingredients = product.ingredients_text?.lowercased() ?? ""
         let labels = product.labels_tags?.map{ tag in tag.lowercased()} ?? []
         let allergens_tags = product.allergens_tags?.map{tag in tag.lowercased()} ?? []
@@ -48,6 +56,7 @@ struct SuitabilityChecker {
         for filter in filters {
             switch filter {
                 //lifestyle
+                //first checks for official vegan / vegetarien tag from OFF before looking at ingredients
             case "Vegan":
                 let isVegan = lifestyleTags.contains(where: {tag in tag.contains("vegan")})
                 if isVegan == false {
@@ -75,14 +84,15 @@ struct SuitabilityChecker {
                         }
                     }
                     
-                
+                //OFF has no pescatarian tag
             case "Pescatarian":
                 
                 let found = nonPescatarianIngredients.filter({ingredient in ingredients.contains(ingredient)})
                 if !found.isEmpty {
                         failedReasons.append("Not pescatarian, contains: \(found.joined(separator: ", "))")}
                 
-            //Allergens
+            //Allergens, uses structured allergen_tags from OFF which is more reliable in returning a relevent response
+            //the ingredients are checked against the allergen tags
             case "Nuts":
                 let found = nut.filter{ingredient in allergens_tags.contains(where: {tag in tag.contains(ingredient)})}
                 if !found.isEmpty{
@@ -103,7 +113,7 @@ struct SuitabilityChecker {
                     failedReasons.append("Contains Gluten")
                 }
                 
-            //Religion
+            //Religion, scans for ingredients as not all products have Halal / Kosher certficiation
             case "Halal":
                 
                 let foundHaramIngredients = haramIngredients.filter {ingredient in ingredients.contains(ingredient)}
@@ -122,6 +132,7 @@ struct SuitabilityChecker {
             }
         }
         
+        //if the product contained no data from OFF then returns unknown
         if failedReasons.isEmpty {
             if lifestyleTags.isEmpty && allergens_tags.isEmpty && ingredients.isEmpty{
                 return .unknown
@@ -133,6 +144,8 @@ struct SuitabilityChecker {
         }
     }
     
+    
+    //Uses OCR to check ingredients via scanned text and compares against selected active filters
     static func checkRawIngredients(text: String, filters: [String]) -> SuitabilityResult{
         
         guard !filters.isEmpty else {
@@ -192,6 +205,7 @@ struct SuitabilityChecker {
                 
             }
         }
+        //if there were no unsuitable ingredients, return suitable
         if failedReasons.isEmpty{
             if text.isEmpty{return .unknown}
             else{
