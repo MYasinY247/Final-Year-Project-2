@@ -15,7 +15,7 @@ enum SuitabilityResult
 }
 
 struct SuitabilityChecker {
-    static let pork = ["pork", "pig", "lard", "bacon", "ham"]
+    static let pork = ["pork", "pig", "lard", "bacon"]
     static let meat = ["meat", "chicken", "beef"]
     static let fish = ["fish", "salmon", "tuna", "shrimp", "prawn", "lobster", "crab", "shellfish"]
     static let dairy = ["milk", "cheese", "butter", "cream", "whey", "casein"]

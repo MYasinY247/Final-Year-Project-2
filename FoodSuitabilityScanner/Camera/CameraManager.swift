@@ -5,20 +5,28 @@
 //  Created by Muhammad Yasin Yahya on 27/01/2026.
 //
 
-import AVFoundation //working with time-based audiovisual media, I'm using the camera and barcode function
+import AVFoundation // handles camera access, sessions and barcode detection
 import SwiftUI
-import Vision
+import Vision // handles OCR text recognition
 
+//nso needed for the object and buffer delegate to work  
+//                               handles barcode detection               handles live video frames for ocr
 class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVideoDataOutputSampleBufferDelegate {
-    let session = AVCaptureSession()
-    var onBarcodeScan: ((String)->Void)? //closure
-    var onIngredientScan: ((String)->Void)? //closure
-    private var barcodeScan = false
-    private var processingIngredient = false
-    private let videoOutput = AVCaptureVideoDataOutput()
-    var scanMode: ScanMode = .idle
-    let metadataOutput = AVCaptureMetadataOutput()
     
+    let session = AVCaptureSession() // main camera session that connects camera to barcode and video output
+    
+    //closures get called when barcode or ingredient is found, used to pass data to scan view
+    var onBarcodeScan: ((String)->Void)?
+    var onIngredientScan: ((String)->Void)?
+    
+    private var barcodeScan = false //prevents multiple barcodes processing at once
+    private var processingIngredient = false // prevents multiple video frames processing at once
+    private let videoOutput = AVCaptureVideoDataOutput() // captures life video frames for ocr
+    
+    var scanMode: ScanMode = .idle //tracks the mode the camera is in
+    let metadataOutput = AVCaptureMetadataOutput()//detect the barcode
+    
+    //the 3 modes the camera can be in
     enum ScanMode {
         case idle
         case barcode
@@ -26,11 +34,11 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
     }
     
     
-    func requestPermission(){ //permission handling to access the camera, no logging required
+    func requestPermission(){ //request permission to use camera, pops up only once for first time users
         AVCaptureDevice.requestAccess(for: .video){_ in}
         
     }
-    func start(){ //starting capture session
+    func start(){ //starts camera session, user initiated, a high priority that the user is waiting for feedback
         DispatchQueue.global(qos: .userInitiated).async {
                 if !self.session.isRunning {
                     self.session.startRunning()
@@ -38,14 +46,15 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
         }
     }
     
-    func stop(){ //ending capture session
+    func stop(){ //stops capture session
         if session.isRunning
         {
             session.stopRunning()
         }
     }
     
-    func cameraSetUp() -> AVCaptureDeviceInput? { //setting up camera
+    // setting up camera as an input, returns nil if permission denied
+    func cameraSetUp() -> AVCaptureDeviceInput? {
         guard let device = AVCaptureDevice.default(for: .video) else {
             return nil
         }
@@ -59,14 +68,16 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
         
     }
     
-    func configureSession(){ //makes camera session, adding video inpout and metadata output
+    //configures camera session based on current scan mode, clears existing inputs and outputs.
+    func configureSession(){
         session.beginConfiguration()
         session.sessionPreset = .high
 
+        //clearing existing inputs and outputs before reconfiguring
         session.inputs.forEach{session.removeInput($0)}
         session.outputs.forEach{session.removeOutput($0)}
 
-        
+        //camera added as video input
         if let videoInput = cameraSetUp() {
             if session.canAddInput(videoInput) {
                 session.addInput(videoInput)   
@@ -75,15 +86,20 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
         
         switch scanMode {
             
+            //camera on but no scanning
         case .idle:
             break
         
+            
         case .barcode:
+            //adds metadata for barcode scanner
             if session.canAddOutput(metadataOutput) {
                 session.addOutput(metadataOutput)
                 
-                
+                // when camera detects barcode, this class is called
                 metadataOutput.setMetadataObjectsDelegate(self, queue: .main)
+                
+                //only scan for common barcode types
                 let supportedTypes = metadataOutput.availableMetadataObjectTypes
                 let desiredTypes = [AVMetadataObject.ObjectType.qr, AVMetadataObject.ObjectType.ean13, AVMetadataObject.ObjectType.ean8, AVMetadataObject.ObjectType.upce, AVMetadataObject.ObjectType.code128]
                 
@@ -93,9 +109,11 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
             }
         
         case .ingredients:
+            //add video output to process individual frames for OCR to process
             if session.canAddOutput(videoOutput) {
                 session.addOutput(videoOutput)
                 
+                //frames processed on background thread to avoid it blocking the UI and keeping UI running smooth
                 videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
             }
         }
@@ -105,49 +123,63 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
     //stops scanning when barcode is detected
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         
+        //prevents multiple barcodes being processed
         guard !barcodeScan else { return }
         
+        //extracts the barcode value as a string
         guard let metadataObject = metadataObjects.first as? AVMetadataMachineReadableCodeObject, let barcodeValue = metadataObject.stringValue else { return }
         
         barcodeScan = true
-        stop() // might remove for a responsive camera scan rather than freezing each time
+        stop()
         
+        //send barcode value to the scanView by using the closure
         onBarcodeScan?(barcodeValue)
     }
     
     
-    
+    //reads text frame to frame with OCR
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        
+        //keywords indicating the ingredient section on food packaging
         let keywords = ["ingredients", "contains:", "contain"]
         guard scanMode == .ingredients else { return }
+        
+        //frame is skipped if one is being processed
         guard !processingIngredient else { return }
         
         self.processingIngredient = true
         
+        //extract pixel frame, raw image data from the camera to be processed
         guard let pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             self.processingIngredient = false
             return
         }
         
+        //creates a vision text recognition request
         let request = VNRecognizeTextRequest{ (request, error) in
             
-            
-            
+            //gets the recognised text from the video
             guard let observations = request.results as? [VNRecognizedTextObservation] else { return }
             
+            //joins all recognised text into a string
             let recognizedText = observations.compactMap{observations in observations.topCandidates(1).first?.string}.joined(separator: "\n")
-            
             let scannedText = recognizedText.lowercased()
             
+            //checks if ingredients are found in the scanned text
             if let keyword = keywords.first (where: {scannedText.contains($0)}){
+                
+                //splits text and takes info after "keywords" constant, removes non ingredient info
                 let parts = recognizedText.components(separatedBy: keyword)
                 if parts.count>1{
                     let ingredientSection = parts[1].lowercased()
                     
-                    let knownIngredients = SuitabilityChecker.nonVeganIngredients + SuitabilityChecker.nonVegetarianIngredients + SuitabilityChecker.nonPescatarianIngredients + SuitabilityChecker.dairy + SuitabilityChecker.nut + SuitabilityChecker.gluten + SuitabilityChecker.otherAnimal + SuitabilityChecker.haramIngredients + SuitabilityChecker.nonKosherIngredients
+                    //builds a list of all known ingredients from Suitability Checker, removes any duplicates by using set
+                    let knownIngredients = Array(Set(SuitabilityChecker.nonVeganIngredients + SuitabilityChecker.nonVegetarianIngredients + SuitabilityChecker.nonPescatarianIngredients + SuitabilityChecker.dairy + SuitabilityChecker.nut + SuitabilityChecker.gluten + SuitabilityChecker.otherAnimal + SuitabilityChecker.haramIngredients + SuitabilityChecker.nonKosherIngredients))
                     
+                    //filters ingredients to ones found in the text
                     let found = knownIngredients.filter{ingredient in ingredientSection.contains(ingredient)}
                     
+                    //only sends back results once a known ingredient is found
                     if !found.isEmpty{
                         DispatchQueue.main.async{
                             self.onIngredientScan?(found.joined(separator: ", "))
@@ -159,13 +191,13 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
             }
             self.processingIngredient = false
         }
-        
+        //performs text recognition request on current frame
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
         try? handler.perform([request])
     }
     
    
-    
+    //switches camera mode by stopping, reconfiguring session and restarting
     func switchCameraMode(to newMode : ScanMode){
         stop()
         barcodeScan = false
