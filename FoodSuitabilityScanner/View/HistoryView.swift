@@ -94,7 +94,7 @@ struct HistoryRow: View{
             VStack(alignment: .leading, spacing: 5){
                 Text(item.productName)
                     .font(.body)
-                    .lineLimit(1)
+                    .lineLimit(2)
                 
                 //date and time of scan
                 Text(item.dateScanned.formatted(date: .abbreviated, time: .shortened))
@@ -105,7 +105,7 @@ struct HistoryRow: View{
                     Text(item.flaggedIngredients)
                         .font(.caption)
                         .foregroundColor(.red)
-                        .lineLimit(2)
+                        
                 
                 }
                 //shows which dietary filters were active at time of scan
@@ -113,7 +113,7 @@ struct HistoryRow: View{
                     Text("Filters: \(item.activeFilters)")
                         .font(.caption)
                         .foregroundColor(.gray)
-                        .lineLimit(2)
+                        
                 }
                 else{
                     //displays this if no filters were active

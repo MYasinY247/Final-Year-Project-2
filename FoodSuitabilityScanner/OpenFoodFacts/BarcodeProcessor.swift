@@ -20,7 +20,7 @@ struct BarcodeProcessor {
             completion(.failure(.noDataAvailable))
             return
         }
-        //begins network requet to OFF on background thread, runs in background to not affect UI, no network = fail
+        //begins network request to OFF on background thread, runs in background to not affect UI, no network = fail
         URLSession.shared.dataTask(with: url) { (data, response, error) in
             if error != nil {
                 completion(.failure(.noDataAvailable))
