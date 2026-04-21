@@ -17,7 +17,7 @@ class ScannedProduct{
     var suitabilityResult:String
     var flaggedIngredients: String
     var imageURL: String?
-    var activeFilters: String
+    var activeFilters: String  //Added in after user gave feedback during testing
     
     init(productName: String, dateScanned: Date, suitabilityResult: String, flaggedIngredients: String, imageURL: String, activeFilters: String) {
         self.productName = productName
