@@ -45,7 +45,7 @@ class DietaryPreferencesModel:ObservableObject {
         defaults.set(isKosherOn, forKey: "isKosherOn")
     }
     
-    // underscore means that i dont need parameter label diet: "vegan" and just write "vegan"
+    // underscore means that i dont need the parameter label diet: "vegan" and just write "vegan"
     func toggleLifestyle(_ diet:String){
         if selectedLifestyle == diet{
             selectedLifestyle = ""
