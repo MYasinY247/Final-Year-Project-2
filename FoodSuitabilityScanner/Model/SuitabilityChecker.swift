@@ -20,7 +20,7 @@ struct SuitabilityChecker {
     static let pork = ["pork", "pig", "lard", "bacon"]
     static let meat = ["meat", "chicken", "beef"]
     static let fish = ["fish", "salmon", "tuna", "shrimp", "prawn", "lobster", "crab", "shellfish"]
-    static let dairy = ["milk", "cheese", "butter", "cream", "whey", "casein"]
+    static let dairy = ["milk", "cheese", "butter", "cream", "whey", "casein", "yoghurt", "yogurt"]
     static let otherAnimal = ["egg", "honey", "gelatine"]
     static let nut = ["hazelnut", "almond", "cashew","chestnut", "walnut", "pine nut","pecan", "pistachio", "peanut", "macadamia", "brazil nut", "may contain nuts"]
     static let gluten = ["gluten", "wheat", "barley", "rye","spelt", "durum", "semolina", "farro", "kamut"]
@@ -58,7 +58,7 @@ struct SuitabilityChecker {
                 //lifestyle
                 //first checks for official vegan / vegetarien tag from OFF before looking at ingredients
             case "Vegan":
-                let isVegan = lifestyleTags.contains(where: {tag in tag.contains("vegan")})
+                let isVegan = lifestyleTags.contains(where: {tag in tag.contains("en:vegan")})
                 if isVegan == false {
                     let found = nonVeganIngredients.filter({ingredient in ingredients.contains(ingredient)})
                     if !found.isEmpty {
@@ -72,7 +72,7 @@ struct SuitabilityChecker {
                 }
                 
             case "Vegetarian":
-                let isVegetarian = lifestyleTags.contains(where: {tag in tag.contains("vegetarian")})
+                let isVegetarian = lifestyleTags.contains(where: {tag in tag.contains("en:vegetarian")})
                     if isVegetarian == false {
                         let found = nonVegetarianIngredients.filter({ingredient in ingredients.contains(ingredient)})
                         if !found.isEmpty {
