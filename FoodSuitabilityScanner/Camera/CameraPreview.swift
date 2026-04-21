@@ -46,6 +46,7 @@ struct CameraPreview: UIViewRepresentable {
             //barcode scanner only scans within the box area, converts scan box area to be in line with camera coordinates
             let conversion = uiView.videoPreviewLayer.metadataOutputRectConverted(fromLayerRect: scanRect)
             metadataOutput.rectOfInterest = conversion
+            
         }
 
     }
