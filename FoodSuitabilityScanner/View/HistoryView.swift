@@ -90,7 +90,7 @@ struct HistoryRow: View{
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .background(Color.gray)
             
-            //keeps line compact by keeping product name on 1 line
+            //keeps line compact by keeping product name on 2 line
             VStack(alignment: .leading, spacing: 5){
                 Text(item.productName)
                     .font(.body)
