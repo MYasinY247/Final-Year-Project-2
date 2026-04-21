@@ -28,16 +28,16 @@ struct DietaryRequirementsView: View {
     let lifestyleOptions: [DietaryOptions] = [
         DietaryOptions(name: "Vegan", description: "No animal products, including meat, poultry, fish, eggs, dairy, or honey."),
         DietaryOptions(name: "Vegetarian", description: "No meat, poultry or fish."),
-        DietaryOptions(name: "Pescatarian", description: "No meat but includes fish and seafoods")]
+        DietaryOptions(name: "Pescatarian", description: "No meat but includes fish and seafoods.")]
     
     let allergyOptions: [DietaryOptions] = [
         DietaryOptions(name: "Nuts", description: "Contains nuts, seeds, or tree nuts."),
         DietaryOptions(name: "Gluten", description: "Contains wheat, barley, rye, spelt, durum, semolina, farro, kamut."),
-        DietaryOptions(name: "Dairy", description: "Contains milk, cheese, yogurt, or cream.")]
+        DietaryOptions(name: "Dairy", description: "Contains milk, cheese, butter, casein, whey, yoghurt, cream.")]
     
     let religionOptions: [DietaryOptions] = [
-        DietaryOptions(name: "Halal", description: "Follows Islamic dietary laws, which prohibit the consumption of pork and other meats considered haram (forbidden in Islam)."),
-        DietaryOptions(name: "Kosher", description: "Follows Jewish dietary laws, which prohibit the consumption of pork and shellfish considered chametz (leavened bread or dairy products).")]
+        DietaryOptions(name: "Halal", description: "Follows Islamic dietary laws, which prohibit the consumption of pork products and alcohol."),
+        DietaryOptions(name: "Kosher", description: "Follows Jewish dietary laws, which prohibit the consumption of pork and shellfish.")]
     
     //options put together for the info button
     var allOptions: [DietaryOptions] {lifestyleOptions + allergyOptions + religionOptions}
