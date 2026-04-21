@@ -19,7 +19,8 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
     //closures get called when barcode or ingredient is detected, they hold the string value of a barcode
     var onBarcodeScan: ((String)->Void)?
     var onIngredientScan: ((String)->Void)?
-    
+
+    var ingredientScanRegion: CGRect = CGRect(x: 0.2, y: 0.35, width: 0.75, height: 0.25)
     var cameraSetUpFailed: (()->Void)? // if camera set up fails, a pop up alert will show
     
     private var barcodeScan = false //prevents multiple barcodes processing at once
@@ -105,7 +106,7 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
             if session.canAddOutput(metadataOutput) {
                 session.addOutput(metadataOutput)
                 
-                // when camera detects barcode, this class is called
+                // when camera detects barcode, this class is called and queue runs on main thread
                 metadataOutput.setMetadataObjectsDelegate(self, queue: .main)
                 
                 //only scan for common barcode types
@@ -178,7 +179,7 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
             if let keyword = keywords.first (where: {scannedText.contains($0)}){
                 
                 //splits text and takes info after "keywords" constant, removes non ingredient info
-                let parts = recognizedText.components(separatedBy: keyword)
+                let parts = scannedText.components(separatedBy: keyword)
                 if parts.count>1{
                     let ingredientSection = parts[1].lowercased()
                     
@@ -200,6 +201,7 @@ class CameraManager:NSObject,AVCaptureMetadataOutputObjectsDelegate, AVCaptureVi
             }
             self.processingIngredient = false
         }
+        request.regionOfInterest = ingredientScanRegion
         //performs text recognition request on current frame
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
         try? handler.perform([request])
