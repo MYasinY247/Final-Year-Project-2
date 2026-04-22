@@ -1,5 +1,5 @@
 //
-//  History.swift
+//  HistoryView.swift
 //  FoodSuitabilityScanner
 //
 //  Created by Muhammad Yasin Yahya on 27/01/2026.
