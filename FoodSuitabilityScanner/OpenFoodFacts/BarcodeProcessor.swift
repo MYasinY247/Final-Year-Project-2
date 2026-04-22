@@ -43,7 +43,7 @@ struct BarcodeProcessor {
                         completion(.success(product))
                     }
                     
-                    //if product doesn't exist, fail
+                    //if product doesn't exist = fail
                     else{
                         completion(.failure(.productNotFound))
                     }
