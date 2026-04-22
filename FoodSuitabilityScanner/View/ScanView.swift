@@ -1,5 +1,5 @@
 //
-//  Camera.swift
+//  ScanView.swift
 //  FoodSuitabilityScanner
 //
 //  Created by Muhammad Yasin Yahya on 27/01/2026.
@@ -10,22 +10,23 @@ import SwiftData
 import AVFoundation
 
 struct ScanView: View {
-    @EnvironmentObject private var diet: DietaryPreferencesModel
-    @Environment(\.modelContext) private var modelContext
-    @State var scannedProduct = ""
-    @State private var cameraManager = CameraManager()
-    @State private var scanMode = CameraManager.ScanMode.idle
+    @EnvironmentObject private var diet: DietaryPreferencesModel  // shares dietary preferences across app
+    @Environment(\.modelContext) private var modelContext // saves barcode scan records
+    @State private var cameraManager = CameraManager()  //manage camera session
+    @State private var scanMode = CameraManager.ScanMode.idle //track current scan mode
     
+    //toggle camera accessibility top row
     @State private var isHapticOn = false
     @State private var isTorchOn = false
     @State private var isSpeechOn = false
-    @State private var resultPopup = false
-    @State private var scanResultData: ScanResultData? = nil
+    
+    @State private var resultPopup = false //controls pop up overlay
+    @State private var scanResultData: ScanResultData? = nil //holds info to display on popup
 
     @State private var showAlert: Bool = false //used for showing camera error
     
-    private let speechSynthesizer = AVSpeechSynthesizer()
-    private let haptic = UINotificationFeedbackGenerator()
+    private let speechSynthesizer = AVSpeechSynthesizer() // reads scan result aloud when activated
+    private let haptic = UINotificationFeedbackGenerator() //vibrate phone after scan
     
     var body: some View {
         ZStack{
@@ -33,6 +34,7 @@ struct ScanView: View {
                           metadataOutput: cameraManager.metadataOutput)
                 .edgesIgnoringSafeArea(.all) // Ensure the preview layer fills the screen
             
+            // dark overlay with a full bright middle section to guide user to scan in that region
             Color.black.opacity(0.6)
                 .mask(Rectangle()
                     .overlay(
@@ -44,7 +46,7 @@ struct ScanView: View {
         )
                 .edgesIgnoringSafeArea(.all)
             
-            //scan border box
+            //scan border box placed in middle section
             RoundedRectangle(cornerRadius: 10)
                 .stroke(Color.white)
                 .frame(width: 300, height: 200)
@@ -60,11 +62,8 @@ struct ScanView: View {
                     //hapric feedback
                     CameraIconButton(icon: "iphone.radiowaves.left.and.right" , isActive: isHapticOn){
                         isHapticOn.toggle()
-                            
-                        
-                        
+             
                     }
-                    
                     
                     //text to speech
                     CameraIconButton(icon: isSpeechOn ? "speaker.wave.3.fill" : "speaker.wave.2", isActive: isSpeechOn){
@@ -76,26 +75,18 @@ struct ScanView: View {
                 
                 
                 Spacer()
-                if !scannedProduct.isEmpty{
-                    Text(scannedProduct)
-                        .padding()
-                        .background(Color.gray.opacity(0.7))
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                        .padding()
-                }
                 
-                // barcode and ingredient buttons
+                // barcode and ingredient buttons, turns green when active
                 HStack(spacing: 40){
                     ButtonMode(icon: "barcode.viewfinder", label: "Barcode", isActive: scanMode == .barcode){
                         scanMode = .barcode
-                        scannedProduct = ""
+                        
                         cameraManager.switchCameraMode(to: .barcode)
                     }
                     
                     ButtonMode(icon:"text.viewfinder", label: "Ingredients", isActive: scanMode == .ingredients){
                         scanMode = .ingredients
-                        scannedProduct = ""
+                        
                         cameraManager.switchCameraMode(to: .ingredients)
 
                     }
@@ -103,23 +94,24 @@ struct ScanView: View {
                 }
                 .padding()
             }
-            //pop up
+            //pop up shows after every scan
             if resultPopup, let data = scanResultData {
                 ScanResultPopUp(data: data, isSpeechOn: isSpeechOn){
                     isTorchOn = false
                     resultPopup = false
                     scanResultData = nil
-                    cameraManager.switchCameraMode(to: scanMode)
+                    cameraManager.switchCameraMode(to: scanMode) //resumes scanning when pop up exited
                 }
                 
             }
         }
                 .onAppear {
-                    cameraManager.requestPermission()
-                    haptic.prepare()
+                    cameraManager.requestPermission() // request camera access when launched
+                    haptic.prepare() // gets haptic feedback ready when toggled on
                   
                     cameraManager.switchCameraMode(to: scanMode)
                     
+                    //barcode scan closure called when barcode detected
                     cameraManager.onBarcodeScan = { barcodeValue in
                         guard scanMode == .barcode else { return }
                         
@@ -128,15 +120,14 @@ struct ScanView: View {
                                 switch result {
                                 case .success(let product):
                                     let name = product.product_name ?? "Unknown"
-//                                    if name.isEmpty {
-//                                        // = "Name not found on database"
-//                                    }
                                 
-                                    let result = SuitabilityChecker.check(product: product, filters: diet.activeFilters)
+                                    //evaluates product ingredients against the active dietary filters
+                                    let result = SuitabilityChecker.check(product: product, filters: diet.activeDietaryFilters)
                                     
                                     let resultString : String
                                     let flagged : String
                                     
+                                    // gets suitability result ready, extracts the flagged ingredients
                                     switch result{
                                     case .suitable:
                                         resultString = "Suitable"
@@ -152,12 +143,14 @@ struct ScanView: View {
                                     if isHapticOn{
                                         haptic.notificationOccurred(.success)
                                     }
+                                    
+                                    //saves to swiftdata, replaces name with a placeholder name if absent from OFF
                                     if name.isEmpty{
-                                        let noNameEntry = ScannedProduct(productName: "Name not found", dateScanned: Date(), suitabilityResult: resultString, flaggedIngredients: flagged, imageURL: product.image_url ?? "", activeFilters: diet.activeFilters.joined(separator: ", "))
+                                        let noNameEntry = ScannedProduct(productName: "Name not found", dateScanned: Date(), suitabilityResult: resultString, flaggedIngredients: flagged, imageURL: product.image_url ?? "", activeFilters: diet.activeDietaryFilters.joined(separator: ", "))
                                         modelContext.insert(noNameEntry)
                                     }
                                     else{
-                                        let entry = ScannedProduct(productName: name, dateScanned: Date(), suitabilityResult: resultString, flaggedIngredients: flagged, imageURL: product.image_url ?? "", activeFilters: diet.activeFilters.joined(separator: ", "))
+                                        let entry = ScannedProduct(productName: name, dateScanned: Date(), suitabilityResult: resultString, flaggedIngredients: flagged, imageURL: product.image_url ?? "", activeFilters: diet.activeDietaryFilters.joined(separator: ", "))
                                         modelContext.insert(entry)
                                     }
                                     
@@ -168,6 +161,7 @@ struct ScanView: View {
                                     
                                     
                                 case .failure:
+                                    //error haptic and shows product not found
                                     if isHapticOn{
                                         haptic.notificationOccurred(.error)
                                     }
@@ -178,34 +172,37 @@ struct ScanView: View {
                         }
                         
                     }
-                    //ingredient scanning
+                    //ingredient scanning when CameraManager detects ingredients
                     cameraManager.onIngredientScan = {
                         scannedText in guard scanMode == .ingredients else { return }
                         
-                        let result = SuitabilityChecker.checkRawIngredients(text: scannedText, filters: diet.activeFilters)
+                        //evaluate text directly, no OFF needed
+                        let result = SuitabilityChecker.checkRawIngredients(text: scannedText, filters: diet.activeDietaryFilters)
                         let flagged : String
                         
                         switch result{
 
                         case .notSuitable(let reasons):
                             flagged = Array(Set(reasons)).joined(separator: ", ")
-                            cameraManager.stop()
+                            cameraManager.stop() //stops once app finds unsuitable ingredients
                             
                         default:
                             flagged = ""
                         }
+                        // Not saved to SwiftData but needed for the pop up
                         scanResultData = ScanResultData(productName: "", imageURL: nil, ingredients: scannedText, result: result, flaggedIngredients: flagged)
                         resultPopup = true
                         
                     }
+                    //shows alert if camera session failed
                     cameraManager.cameraSetUpFailed = {
                         showAlert = true
                     }
                     
                 }
+                //turns off torch and stops camera session when user leaves ScanView
                 .onDisappear{
                     cameraManager.stop()
-                    scannedProduct = ""
                     if isTorchOn {toggleTorch()}
                 }
                 .alert(isPresented: $showAlert){
@@ -232,7 +229,7 @@ struct ScanView: View {
     
 }
 
-//camera button row
+//camera button top row, yellow means active, white means deactivated
 struct CameraIconButton: View {
     let icon: String
     let isActive: Bool
@@ -250,7 +247,7 @@ struct CameraIconButton: View {
     }
     
 }
-// barcode and ingredient button
+// barcode and ingredient button, green means in use
 struct ButtonMode: View {
     let icon : String
     let label : String
