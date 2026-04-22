@@ -1,5 +1,5 @@
 //
-//  DietaryRequirements.swift
+//  DietaryRequirementsView.swift
 //  FoodSuitabilityScanner
 //
 //  Created by Muhammad Yasin Yahya on 27/01/2026.
@@ -19,7 +19,7 @@ struct DietaryOptions: Identifiable {
 //lets user set their dietary preferences, reads and writes to DietaryPreferencesModel via @EnvironmentObject to ensure changes made across app
 
 struct DietaryRequirementsView: View {
-    @EnvironmentObject private var diet: DietaryPreferencesModel
+    @EnvironmentObject private var diet: DietaryPreferencesModel //shared model across app
     
     //controls info popup
     @State private var showInfo = false
