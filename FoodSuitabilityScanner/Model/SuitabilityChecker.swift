@@ -1,5 +1,5 @@
 //
-//  Untitled.swift
+//  SuitabilityChecker.swift
 //  FoodSuitabilityScanner
 //
 //  Created by Muhammad Yasin Yahya on 15/03/2026.
@@ -68,7 +68,6 @@ struct SuitabilityChecker {
                         failedReasons.append("Not confirmed vegan")
                     
                     }
-    
                 }
                 
             case "Vegetarian":
@@ -98,8 +97,6 @@ struct SuitabilityChecker {
                 if !found.isEmpty{
                     failedReasons.append("Contains Nuts")
                 }
-
-                
                 
             case "Dairy":
                 let found = dairy.filter{ingredient in allergens_tags.contains(where: {tag in tag.contains(ingredient)})}
