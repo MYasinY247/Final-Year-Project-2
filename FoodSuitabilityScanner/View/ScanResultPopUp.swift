@@ -165,18 +165,6 @@ struct ScanResultPopUp: View {
         }
     }
     
-//May not even need
-    //returns colour to be used with each outcome
-//    private var resultColour: Color{
-//        switch data.result{
-//        case .suitable:
-//                .green
-//        case .notSuitable:
-//                .red
-//        case .unknown:
-//                .orange
-//        }
-//    }
     
     //text to speech, for unsuitable results, includes the unsuitable ingredients
     private func speakResult(){
@@ -190,7 +178,7 @@ struct ScanResultPopUp: View {
             tts = "Status unclear, please double check the ingredients"
         
         }
-        //speed the tts reads at
+        //speaks the text in English
         let utterance = AVSpeechUtterance(string: tts)
         utterance.voice = AVSpeechSynthesisVoice(language: "en-GB")
         utterance.rate = 0.5
