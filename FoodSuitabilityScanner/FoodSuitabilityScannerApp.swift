@@ -13,6 +13,7 @@ struct FoodSuitabilityScannerApp: App {
     @StateObject private var diet = DietaryPreferencesModel()
     @AppStorage("fontSize") private var fontSize:String = "Medium"
     
+    //used for fontsize
     var size : ContentSizeCategory{
         switch fontSize{
         case "Small": return .small
