@@ -1,5 +1,5 @@
 //
-//  Settings.swift
+//  SettingsView.swift
 //  FoodSuitabilityScanner
 //
 //  Created by Muhammad Yasin Yahya on 27/01/2026.
@@ -10,11 +10,11 @@ import SwiftData
 
 
 struct SettingsView: View {
-    @EnvironmentObject var diet : DietaryPreferencesModel
-    @Environment(\.modelContext) private var modelContext
-    @Query private var history :[ScannedProduct]
+    @EnvironmentObject var diet : DietaryPreferencesModel  //shared model across app
+    @Environment(\.modelContext) private var modelContext //access to SwiftData
+    @Query private var history :[ScannedProduct] //fetch records from SwiftData
     
-    @AppStorage("fontSize") private var fontSize: String = "Medium"
+    @AppStorage("fontSize") private var fontSize: String = "Medium" //default font size when user first launches app
     @State private var clearDietAlert = false
     @State private var clearHistoryAlert = false
     
@@ -23,7 +23,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationView{
             List{
-                //font size
+                //font size applies to whole app
                 Section{
                     HStack{
                         Label{
@@ -71,6 +71,7 @@ struct SettingsView: View {
                     }
                     .padding()
                 }
+                //destructive in red to follow Apple design
                 .alert("Clear Dietary Requirements", isPresented: $clearDietAlert){
                     Button("Clear", role: .destructive){diet.resetAll()}
                     Button("Cancel", role: .cancel){}
@@ -101,7 +102,7 @@ struct SettingsView: View {
                 
                 }
                 .alert("Clear Scan History", isPresented: $clearHistoryAlert){
-                    Button("Clear", role: .destructive){clearHistory()}
+                    Button("Clear", role: .destructive){clearHistory()} //deletes all ScannedProduct records
                     Button("Cancel", role: .cancel){}
                     
                 } message: {
@@ -112,6 +113,7 @@ struct SettingsView: View {
                     Label{
                         VStack(alignment: .leading)
                         {
+                            //notice reminding users the app is a tool
                             Text("Important Notice")
                             Text("This app is a tool to assist decision making only and should not be treated as a definitive source of verification. Always check product labels and ask for clarification if you have dietary, allergen, or religious requirements.")
                                 .font(.caption)
@@ -128,6 +130,7 @@ struct SettingsView: View {
         }
     }
     
+    //loops over records and removing each one
     private func clearHistory(){
         for item in history{
             modelContext.delete(item)
