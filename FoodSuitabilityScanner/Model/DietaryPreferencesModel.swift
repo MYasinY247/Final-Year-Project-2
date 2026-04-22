@@ -57,14 +57,14 @@ class DietaryPreferencesModel:ObservableObject {
     }
     
     //computed properties dont store in memory calcs value dynamically when needed
-    var activeLifestyle: String? {
+    var activeDietaryLifestyle: String? {
         return selectedLifestyle.isEmpty ? nil : selectedLifestyle
     }
     
     //returns a list of currently active preferences
-    var activeFilters: [String]{
+    var activeDietaryFilters: [String]{
         var filters: [String] = []
-        if let lifestyle = activeLifestyle {filters.append(lifestyle)}
+        if let lifestyle = activeDietaryLifestyle {filters.append(lifestyle)}
         if isNutsOn { filters.append("Nuts") }
         if isGlutenOn { filters.append("Gluten") }
         if isDairyOn { filters.append("Dairy") }
